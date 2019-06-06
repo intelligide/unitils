@@ -1,0 +1,9 @@
+{
+  "name": "com.arsenstudio.unitils",
+  "version": "1.0.0",
+  "displayName": "Unitils",
+  "unity": "2018.1",
+  "description": "Utilities for Unity",
+  "dependencies": {
+  }
+}
