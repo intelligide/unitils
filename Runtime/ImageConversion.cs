@@ -1,7 +1,8 @@
 
 using System;
+using UnityEngine;
 
-namespace UnityEngine
+namespace unitils
 {
     public static class ImageConversion
     {
@@ -19,7 +20,7 @@ namespace UnityEngine
         /// <param name="tex">The texture to load the image into.</param>
         /// <param name="data">The byte array containing the image data to load.</param>
         /// <returns>Returns true if the data can be loaded, false otherwise.</returns>
-        public static bool LoadDXTImage(this Texture2D tex, byte[] data)
+        public static bool LoadDXTImage(byte[] data, out Texture2D tex)
         {
             // DDS File Format Specs:
             // https://docs.microsoft.com/en-us/windows/desktop/direct3ddds/dx-graphics-dds-pguide
@@ -27,6 +28,7 @@ namespace UnityEngine
             if (data[4] != 124 || !(data[84] == 'D' && data[85] == 'X' && data[86] == 'T')) //this header byte should be 124 for DDS image files
             {
                 Debug.LogError("Invalid DDS DXT texture. Unable to read");
+                tex = null;
                 return false;
             }
 
@@ -43,20 +45,23 @@ namespace UnityEngine
             else
             {
                 Debug.LogError("Invalid TextureFormat. Only DXT1 and DXT5 formats are supported by this method.");
+                tex = null;
                 return false;
             }
 
             uint height = System.BitConverter.ToUInt32(data, 12);
             uint width = System.BitConverter.ToUInt32(data, 16);
 
-            const int DDS_HEADER_SIZE = 128;
+            const int DDS_HEADER_SIZE = 124 + 4;
             byte[] dxtBytes = new byte[data.Length - DDS_HEADER_SIZE];
             Buffer.BlockCopy(data, DDS_HEADER_SIZE, dxtBytes, 0, data.Length - DDS_HEADER_SIZE);
 
             // tex.format = format;
             tex.width = checked((int) width);
-            tex.height = checked((int) height);
+
+            tex = new Texture2D(checked((int) width), checked((int) height), format, true);
             tex.LoadRawTextureData(dxtBytes);
+            tex.Apply();
 
             return true;
         }
