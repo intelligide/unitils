@@ -56,9 +56,6 @@ namespace unitils
             byte[] dxtBytes = new byte[data.Length - DDS_HEADER_SIZE];
             Buffer.BlockCopy(data, DDS_HEADER_SIZE, dxtBytes, 0, data.Length - DDS_HEADER_SIZE);
 
-            // tex.format = format;
-            tex.width = checked((int) width);
-
             tex = new Texture2D(checked((int) width), checked((int) height), format, true);
             tex.LoadRawTextureData(dxtBytes);
             tex.Apply();
