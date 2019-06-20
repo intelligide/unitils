@@ -1,0 +1,14 @@
+{
+    "name": "ArsenStudio.Unitils.ChunkFileSystem",
+    "references": [
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}
