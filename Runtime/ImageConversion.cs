@@ -1,6 +1,7 @@
 
 using System;
 using unitils.crunch;
+using unitils.ktx;
 using UnityEngine;
 
 namespace unitils
@@ -15,8 +16,6 @@ namespace unitils
         /// <see cref="TextureFormat.DXT5"/> format.
         ///
         /// This function support doesn't crunched textures. Use <see cref="ImageConversion.LoadCrunchedDXTImage"/> instead.
-        ///
-        /// Call <see cref="Texture2D.Apply"/> after setting image data to actually upload it to the GPU.
         /// </summary>
         /// <param name="tex">The texture to load the image into.</param>
         /// <param name="data">The byte array containing the image data to load.</param>
@@ -106,6 +105,43 @@ namespace unitils
                 tex = null;
                 return false;
             }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Loads KTX image byte array into a texture.
+        ///
+        /// This function replaces texture contents with new image data. After LoadImage, texture size and format might
+        /// change. ETC1 files are loaded into <see cref="TextureFormat.ETC_RGB4"/> format, ETC2 files are loaded into
+        /// <see cref="TextureFormat.ETC2_RGBA8"/> format.
+        /// </summary>
+        /// <param name="tex">The texture to load the image into.</param>
+        /// <param name="data">The byte array containing the image data to load.</param>
+        /// <returns>Returns true if the data can be loaded, false otherwise.</returns>
+        public static bool LoadKTXImage(byte[] data, out Texture2D tex)
+        {
+            var ktxFileSpec = new KTXFile(data, true);
+
+            TextureFormat format;
+            if(ktxFileSpec.Header.GlInternalFormat == KTXPixelFormat.COMPRESSED_RGB8_ETC2)
+            {
+                format = TextureFormat.ETC2_RGB;
+            }
+            else if(ktxFileSpec.Header.GlInternalFormat == KTXPixelFormat.COMPRESSED_RGBA8_ETC2_EAC)
+            {
+                format = TextureFormat.EAC_RG;
+            }
+            else
+            {
+                Debug.LogError("Invalid TextureFormat. Only DXT1 and DXT5 formats are supported by this method.");
+                tex = null;
+                return false;
+            }
+
+            tex = new Texture2D((int) ktxFileSpec.Header.Width, (int) ktxFileSpec.Header.Height, format, (ktxFileSpec.Header.MipMapCount > 1));
+            tex.LoadRawTextureData(ktxFileSpec.UnityTextureData);
+            tex.Apply();
 
             return true;
         }
