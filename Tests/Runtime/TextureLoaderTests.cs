@@ -13,7 +13,7 @@ namespace unitils.Tests
             string imgTestPath = Path.GetFullPath("Packages/com.arsenstudio.unitils/Tests/Runtime/tex.dds");
             byte[] imgData = File.ReadAllBytes(imgTestPath);
             Texture2D tex;
-            ImageConversion.LoadDXTImage(imgData, out tex);
+            ImageConversion.LoadDDSImage(imgData, out tex);
 
             Assert.NotNull(tex);
             Assert.That(tex.width, Is.EqualTo(64));

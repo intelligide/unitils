@@ -1,7 +1,7 @@
 
 using System;
 using unitils.crunch;
-using unitils.ktx;
+using unitils.textures;
 using UnityEngine;
 
 namespace unitils
@@ -20,46 +20,25 @@ namespace unitils
         /// <param name="tex">The texture to load the image into.</param>
         /// <param name="data">The byte array containing the image data to load.</param>
         /// <returns>Returns true if the data can be loaded, false otherwise.</returns>
-        public static bool LoadDXTImage(byte[] data, out Texture2D tex)
+        public static bool LoadDDSImage(byte[] data, out Texture2D tex)
         {
             // DDS File Format Specs:
             // https://docs.microsoft.com/en-us/windows/desktop/direct3ddds/dx-graphics-dds-pguide
 
-            if (data[4] != 124 || !(data[84] == 'D' && data[85] == 'X' && data[86] == 'T')) //this header byte should be 124 for DDS image files
+            var ddsImporter = new DDSTextureImporter(data);
+
+            try
             {
-                Debug.LogError("Invalid DDS DXT texture. Unable to read");
+                tex = ddsImporter.GetTexture2D();
+                tex.Apply();
+                return true;
+            }
+            catch(Exception e)
+            {
+                Debug.LogException(e);
                 tex = null;
                 return false;
             }
-
-            byte formatByte = data[87];
-            TextureFormat format;
-            if(formatByte == '1')
-            {
-                format = TextureFormat.DXT1;
-            }
-            else if(formatByte == '5')
-            {
-                format = TextureFormat.DXT5;
-            }
-            else
-            {
-                Debug.LogError("Invalid TextureFormat. Only DXT1 and DXT5 formats are supported by this method.");
-                tex = null;
-                return false;
-            }
-
-            int height = data[13] * 256 + data[12];
-            int width = data[17] * 256 + data[16];
-
-            const int DDS_HEADER_SIZE = 124 + 4;
-            byte[] dxtBytes = new byte[data.Length - DDS_HEADER_SIZE];
-            Buffer.BlockCopy(data, DDS_HEADER_SIZE, dxtBytes, 0, data.Length - DDS_HEADER_SIZE);
-            tex = new Texture2D(width, height, format, true);
-            tex.LoadRawTextureData(dxtBytes);
-            tex.Apply();
-
-            return true;
         }
 
         /// <summary>
@@ -83,67 +62,46 @@ namespace unitils
             // https://github.com/DaemonEngine/crunch/blob/master/inc/crn_defs.h
             // https://forum.unity.com/threads/loading-crunched-dxt-at-runtime.497861/#post-3238253
 
-            byte formatByte = data[18];
+            var crnImporter = new CRNTextureImporter(data);
 
-            if(formatByte == (byte) CrnFormat.DXT1 || formatByte == (byte) CrnFormat.DXT5)
+            try
             {
-                byte[] dxtData = unitils.UnityCRN.Transcode(data);
-                if(LoadDXTImage(dxtData, out tex))
-                {
-                    return false;
-                }
+                tex = crnImporter.GetTexture2D();
+                tex.Apply();
+                return true;
             }
-            /*else if (formatByte == (byte) CrnFormat.ETC1) {
-                format = TextureFormat.ETC_RGB4Crunched;
-            }
-            else if (formatByte == (byte) CrnFormat.ETC2) {
-                format = TextureFormat.ETC2_RGBA8Crunched;
-            }*/
-            else
+            catch(Exception e)
             {
-                Debug.LogError("Invalid TextureFormat. Only Crunched DXT1, DXT5, ETC1 and ETC2 formats are supported by this method.");
+                Debug.LogException(e);
                 tex = null;
                 return false;
             }
-
-            return true;
         }
 
         /// <summary>
         /// Loads KTX image byte array into a texture.
         ///
-        /// This function replaces texture contents with new image data. After LoadImage, texture size and format might
-        /// change. ETC1 files are loaded into <see cref="TextureFormat.ETC_RGB4"/> format, ETC2 files are loaded into
-        /// <see cref="TextureFormat.ETC2_RGBA8"/> format.
+        /// This function replaces texture contents with new image data.
         /// </summary>
-        /// <param name="tex">The texture to load the image into.</param>
         /// <param name="data">The byte array containing the image data to load.</param>
+        /// <param name="tex">The texture to load the image into.</param>
         /// <returns>Returns true if the data can be loaded, false otherwise.</returns>
         public static bool LoadKTXImage(byte[] data, out Texture2D tex)
         {
-            var ktxFileSpec = new KTXFile(data, true);
+            var ktxImporter = new KTXTextureImporter(data);
 
-            TextureFormat format;
-            if(ktxFileSpec.Header.GlInternalFormat == KTXPixelFormat.COMPRESSED_RGB8_ETC2)
+            try
             {
-                format = TextureFormat.ETC2_RGB;
+                tex = ktxImporter.GetTexture2D();
+                tex.Apply();
+                return true;
             }
-            else if(ktxFileSpec.Header.GlInternalFormat == KTXPixelFormat.COMPRESSED_RGBA8_ETC2_EAC)
+            catch(Exception e)
             {
-                format = TextureFormat.EAC_RG;
-            }
-            else
-            {
-                Debug.LogError("Invalid TextureFormat. Only DXT1 and DXT5 formats are supported by this method.");
+                Debug.LogException(e);
                 tex = null;
                 return false;
             }
-
-            tex = new Texture2D((int) ktxFileSpec.Header.Width, (int) ktxFileSpec.Header.Height, format, (ktxFileSpec.Header.MipMapCount > 1));
-            tex.LoadRawTextureData(ktxFileSpec.UnityTextureData);
-            tex.Apply();
-
-            return true;
         }
     }
 }
