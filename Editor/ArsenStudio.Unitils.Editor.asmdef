@@ -1,6 +1,7 @@
 {
     "name": "ArsenStudio.Unitils.Editor",
     "references": [
+        "ArsenStudio.Unitils.Runtime"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [
