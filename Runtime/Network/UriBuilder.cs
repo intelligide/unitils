@@ -5,7 +5,7 @@ using System.Web;
 
 namespace unitils
 {
-    public class UriBuilder
+    public class Uri
     {
         public string Scheme;
 
@@ -84,7 +84,86 @@ namespace unitils
 
             return strBuilder.ToString();
         }
+    }
 
+    public class UriBuilder
+    {
+        private Uri m_uri;
 
+        public UriBuilder()
+        {
+            m_uri = new Uri();
+        }
+
+        public UriBuilder Scheme(string val)
+        {
+            m_uri.Scheme = val;
+            return this;
+        }
+
+        public UriBuilder User(string val)
+        {
+            m_uri.User = val;
+            return this;
+        }
+
+        public UriBuilder Password(string val)
+        {
+            m_uri.Password = val;
+            return this;
+        }
+
+        public UriBuilder Host(string val)
+        {
+            m_uri.Host = val;
+            return this;
+        }
+
+        public UriBuilder Port(int val)
+        {
+            m_uri.Port = val;
+            return this;
+        }
+
+        public UriBuilder Path(string val)
+        {
+            m_uri.Path = val;
+            return this;
+        }
+
+        public UriBuilder Fragment(string val)
+        {
+            m_uri.Fragment = val;
+            return this;
+        }
+
+        public UriBuilder QueryParams(Dictionary<string, string> val)
+        {
+            m_uri.QueryParams = val;
+
+            return this;
+        }
+
+        public UriBuilder AddQueryParam(string name, string value)
+        {
+            if(m_uri.QueryParams == null)
+            {
+                m_uri.QueryParams = new Dictionary<string, string>();
+            }
+            m_uri.QueryParams[name] = value;
+
+            return this;
+        }
+
+        public UriBuilder AddQueryParam<T>(string name, T value)
+        {
+            AddQueryParam(name, value.ToString());
+            return this;
+        }
+
+        public Uri Build()
+        {
+            return m_uri;
+        }
     }
 }
